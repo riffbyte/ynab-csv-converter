@@ -57,7 +57,7 @@ export default function UploadPage() {
           </div>
 
           <Button className="w-full" type="submit" disabled={requestPending}>
-            Upload & Convert
+            {requestPending ? 'Please wait...' : 'Upload & Convert'}
           </Button>
         </form>
       ) : null}
