@@ -1,14 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function UploadPage() {
   const [csvUrl, setCsvUrl] = useState<string | null>(null);
   const [filename, setFilename] = useState<string>('processed.csv');
+  const [requestPending, setRequestPending] = useState(false);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+
+    setRequestPending(true);
 
     const res = await fetch('/upload', {
       method: 'POST',
@@ -26,39 +32,55 @@ export default function UploadPage() {
       setCsvUrl(url);
       setFilename(name);
     }
+
+    setRequestPending(false);
+  };
+
+  const handleReset = () => {
+    setCsvUrl(null);
+    setFilename('processed.csv');
+    setRequestPending(false);
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Upload Excel File</h1>
-      <form onSubmit={handleUpload}>
-        <input
-          type="file"
-          name="file"
-          accept=".xlsx"
-          required
-          className="mb-4"
-        />
-        <br />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+    <main className="flex flex-col w-full h-screen items-center justify-center gap-6 p-16">
+      <h1 className="text-2xl font-semibold">XLSX to CSV conveter for YNAB</h1>
+
+      {!csvUrl ? (
+        <form
+          className="flex flex-col w-full max-w-sm items-center gap-6"
+          onSubmit={handleUpload}
         >
-          Upload & Convert
-        </button>
-      </form>
+          <div className="flex flex-col w-full gap-3">
+            <Label htmlFor="file">Upload Excel File</Label>
+            <Input id="file" type="file" name="file" accept=".xlsx" required />
+          </div>
+
+          <Button className="w-full" type="submit" disabled={requestPending}>
+            Upload & Convert
+          </Button>
+        </form>
+      ) : null}
 
       {csvUrl && (
-        <div className="mt-6">
-          <a
-            href={csvUrl}
-            download={filename}
-            className="text-blue-700 underline"
+        <div className="flex flex-col w-full max-w-sm items-center gap-4">
+          <h1 className="text-xl font-semibold">Your file is ready!</h1>
+
+          <Button className="w-full max-w-sm" asChild>
+            <a href={csvUrl} download={filename}>
+              Download "{filename}"
+            </a>
+          </Button>
+          <Button
+            className="w-full"
+            type="reset"
+            variant="outline"
+            onClick={handleReset}
           >
-            Download {filename}
-          </a>
+            Start over
+          </Button>
         </div>
       )}
-    </div>
+    </main>
   );
 }
