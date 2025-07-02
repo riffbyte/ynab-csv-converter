@@ -20,12 +20,12 @@ export class BaseStatementProcessor {
     this.rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
   }
 
-  public getColumnIndex(columnName: string) {
+  protected getColumnIndex(columnName: string) {
     const headers = this.rawData[0];
     return headers.indexOf(columnName);
   }
 
-  public processRows(
+  protected processRows(
     iterator: (
       row: RawDataRow,
       index: number,
@@ -40,7 +40,7 @@ export class BaseStatementProcessor {
     }
   }
 
-  public getCSVData() {
+  protected getCSVData() {
     const csvSheet = XLSX.utils.aoa_to_sheet(this.result);
     return XLSX.utils.sheet_to_csv(csvSheet);
   }

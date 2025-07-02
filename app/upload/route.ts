@@ -1,34 +1,6 @@
 import path from 'node:path';
 import { type NextRequest, NextResponse } from 'next/server';
-import { BaseStatementProcessor } from '@/lib/processors/base';
-
-function extractPayee(details: string): string {
-  if (typeof details !== 'string') return '';
-
-  if (details.includes('Merchant: ')) {
-    const match = details.match(/Merchant: ([^,;]+)/);
-    return match?.[1] || '';
-  } else if (details.includes('Outgoing Transfer - Amount')) {
-    const match = details.match(/Beneficiary: ([^;]+)/);
-    return match?.[1] || '';
-  } else if (details.includes('Fee - Amount')) {
-    return 'SOLO';
-  } else if (details.includes('payment service')) {
-    const match = details.match(/payment service, ([^,]+)/);
-    return match?.[1] || '';
-  } else if (
-    details.includes('Payment - Amount') &&
-    details.includes('Date:')
-  ) {
-    const match = details.match(/; ([^;]+); Date:/);
-    return match?.[1] || '';
-  } else if (details.includes('Incoming Transfer - Amount')) {
-    const match = details.match(/Sender: ([^;]+); Account/);
-    return match?.[1] || '';
-  }
-
-  return '';
-}
+import { BOGStatementProcessor } from '@/lib/processors/bog';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -46,32 +18,9 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(arrayBuffer);
 
   try {
-    const processor = new BaseStatementProcessor(buffer, 'Transactions');
+    const processor = new BOGStatementProcessor(buffer);
 
-    const dateIdx = processor.getColumnIndex('Date');
-    const detailsIdx = processor.getColumnIndex('Details');
-    const amountIdx = processor.getColumnIndex('GEL');
-
-    if (dateIdx === -1 || detailsIdx === -1 || amountIdx === -1) {
-      return NextResponse.json(
-        { error: 'Required columns missing' },
-        { status: 400 },
-      );
-    }
-
-    processor.processRows((row) => {
-      const date = row[dateIdx];
-      const details = row[detailsIdx];
-      const amount = row[amountIdx];
-
-      if (amount === undefined || amount === null || amount === '') return null;
-
-      const payee = extractPayee(details);
-
-      return [date, payee, details, amount];
-    });
-
-    const csvData = processor.getCSVData();
+    const csvData = processor.getProcessedCSVData();
 
     return new NextResponse(csvData, {
       status: 200,
