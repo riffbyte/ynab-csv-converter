@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
-import path from 'path';
+import path from 'node:path';
+import { type NextRequest, NextResponse } from 'next/server';
+import { BaseStatementProcessor } from '@/lib/processors/base';
 
 function extractPayee(details: string): string {
   if (typeof details !== 'string') return '';
@@ -16,7 +16,10 @@ function extractPayee(details: string): string {
   } else if (details.includes('payment service')) {
     const match = details.match(/payment service, ([^,]+)/);
     return match?.[1] || '';
-  } else if (details.includes('Payment - Amount') && details.includes('Date:')) {
+  } else if (
+    details.includes('Payment - Amount') &&
+    details.includes('Date:')
+  ) {
     const match = details.match(/; ([^;]+); Date:/);
     return match?.[1] || '';
   } else if (details.includes('Incoming Transfer - Amount')) {
@@ -43,40 +46,32 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(arrayBuffer);
 
   try {
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const processor = new BaseStatementProcessor(buffer, 'Transactions');
 
-    const sheet = workbook.Sheets['Transactions'];
-    if (!sheet) {
-      return NextResponse.json({ error: 'Sheet "Transactions" not found' }, { status: 400 });
-    }
-
-    const rawData: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    const headers = rawData[0];
-    const dateIdx = headers.indexOf('Date');
-    const detailsIdx = headers.indexOf('Details');
-    const amountIdx = headers.indexOf('GEL');
+    const dateIdx = processor.getColumnIndex('Date');
+    const detailsIdx = processor.getColumnIndex('Details');
+    const amountIdx = processor.getColumnIndex('GEL');
 
     if (dateIdx === -1 || detailsIdx === -1 || amountIdx === -1) {
-      return NextResponse.json({ error: 'Required columns missing' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Required columns missing' },
+        { status: 400 },
+      );
     }
 
-    const result = [['Date', 'Payee', 'Memo', 'Amount']];
-
-    for (let i = 1; i < rawData.length; i++) {
-      const row = rawData[i];
+    processor.processRows((row) => {
       const date = row[dateIdx];
       const details = row[detailsIdx];
       const amount = row[amountIdx];
 
-      if (amount === undefined || amount === null || amount === '') continue;
+      if (amount === undefined || amount === null || amount === '') return null;
 
       const payee = extractPayee(details);
-      result.push([date, payee, details, amount]);
-    }
 
-    const csvSheet = XLSX.utils.aoa_to_sheet(result);
-    const csvData = XLSX.utils.sheet_to_csv(csvSheet);
+      return [date, payee, details, amount];
+    });
+
+    const csvData = processor.getCSVData();
 
     return new NextResponse(csvData, {
       status: 200,
@@ -87,6 +82,14 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to process Excel file' }, { status: 500 });
+
+    if (err instanceof Error && err.cause === 'Invalid data') {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to process Excel file' },
+      { status: 500 },
+    );
   }
 }
