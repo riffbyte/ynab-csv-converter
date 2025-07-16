@@ -3,6 +3,7 @@ import type { BaseStatementProcessor } from './base';
 export interface StatementProcessor extends BaseStatementProcessor {
   getProcessedCSVData<Currencies extends readonly string[]>(
     currency: Currencies[number],
+    shouldConvert?: boolean,
   ): string;
 }
 

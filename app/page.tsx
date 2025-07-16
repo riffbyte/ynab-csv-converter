@@ -4,6 +4,7 @@ import { AlertCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,6 +25,7 @@ export default function UploadPage() {
   const { availableCurrencies, defaultCurrency } = getAvailableCurrencies(bank);
   const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
+  const [shouldConvert, setShouldConvert] = useState(false);
 
   useEffect(() => {
     setCurrency(defaultCurrency);
@@ -119,6 +121,20 @@ export default function UploadPage() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="flex w-full items-center gap-3">
+            <Checkbox
+              id="shouldConvert"
+              name="shouldConvert"
+              checked={shouldConvert}
+              onCheckedChange={(checked) =>
+                setShouldConvert(checked === 'indeterminate' ? false : checked)
+              }
+            />
+            <Label htmlFor="shouldConvert">
+              Auto-convert transactions in other currencies
+            </Label>
           </div>
 
           {error && (
