@@ -39,7 +39,7 @@ export class BOGStatementProcessor
   }
 
   public getProcessedCSVData(
-    currency: (typeof CONSTANTS.availableCurrencies)[number] = CONSTANTS.defaultCurrency,
+    currency: (typeof CONSTANTS.availableCurrencies)[number],
   ): string {
     const dateIdx = this.getColumnIndex('Date');
     const detailsIdx = this.getColumnIndex('Details');

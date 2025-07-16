@@ -1,7 +1,9 @@
 import type { BaseStatementProcessor } from './base';
 
 export interface StatementProcessor extends BaseStatementProcessor {
-  getProcessedCSVData(): string;
+  getProcessedCSVData<Currencies extends readonly string[]>(
+    currency: Currencies[number],
+  ): string;
 }
 
 export type StatementConstants<Currencies extends readonly string[]> = {
@@ -10,3 +12,9 @@ export type StatementConstants<Currencies extends readonly string[]> = {
   transactionsSheetName: string;
   isValidCurrency(currency: string): currency is Currencies[number];
 };
+
+export enum Bank {
+  BOG = 'Bank of Georgia',
+  TBC = 'TBC',
+  CREDO = 'Credo Bank',
+}
