@@ -4,11 +4,20 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { CONSTANTS } from '@/lib/processors/bog/constants';
 
 export default function UploadPage() {
   const [csvUrl, setCsvUrl] = useState<string | null>(null);
   const [filename, setFilename] = useState<string>('processed.csv');
   const [requestPending, setRequestPending] = useState(false);
+  const [currency, setCurrency] = useState<string>(CONSTANTS.defaultCurrency);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,6 +65,25 @@ export default function UploadPage() {
             <Input id="file" type="file" name="file" accept=".xlsx" required />
           </div>
 
+          <div className="flex flex-col w-full gap-3">
+            <Label htmlFor="currency">Currency</Label>
+            <Select
+              name="currency"
+              value={currency}
+              onValueChange={setCurrency}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {CONSTANTS.availableCurrencies.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button className="w-full" type="submit" disabled={requestPending}>
             {requestPending ? 'Please wait...' : 'Upload & Convert'}
           </Button>

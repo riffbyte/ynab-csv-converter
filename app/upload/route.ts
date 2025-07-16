@@ -1,13 +1,19 @@
 import path from 'node:path';
 import { type NextRequest, NextResponse } from 'next/server';
 import { BOGStatementProcessor } from '@/lib/processors/bog';
+import { CONSTANTS } from '@/lib/processors/bog/constants';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
-  const file = formData.get('file') as File;
+  const file = formData.get('file') as File | null;
+  const currency = formData.get('currency') as string | null;
 
   if (!file) {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+  }
+
+  if (!currency || !CONSTANTS.isValidCurrency(currency)) {
+    return NextResponse.json({ error: 'Invalid currency' }, { status: 400 });
   }
 
   const fileName = file.name;
@@ -20,7 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     const processor = new BOGStatementProcessor(buffer);
 
-    const csvData = processor.getProcessedCSVData();
+    const csvData = processor.getProcessedCSVData(currency);
 
     return new NextResponse(csvData, {
       status: 200,

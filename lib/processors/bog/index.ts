@@ -1,12 +1,13 @@
 import { BaseStatementProcessor } from '../base';
 import type { StatementProcessor } from '../types';
+import { CONSTANTS } from './constants';
 
 export class BOGStatementProcessor
   extends BaseStatementProcessor
   implements StatementProcessor
 {
   constructor(fileBuffer: Buffer<ArrayBuffer>) {
-    super(fileBuffer, 'Transactions');
+    super(fileBuffer, CONSTANTS.transactionsSheetName);
   }
 
   private extractPayee(details: string): string {
@@ -37,10 +38,12 @@ export class BOGStatementProcessor
     return '';
   }
 
-  public getProcessedCSVData(): string {
+  public getProcessedCSVData(
+    currency: (typeof CONSTANTS.availableCurrencies)[number] = CONSTANTS.defaultCurrency,
+  ): string {
     const dateIdx = this.getColumnIndex('Date');
     const detailsIdx = this.getColumnIndex('Details');
-    const amountIdx = this.getColumnIndex('GEL');
+    const amountIdx = this.getColumnIndex(currency);
 
     if (dateIdx === -1 || detailsIdx === -1 || amountIdx === -1) {
       throw new Error('Required columns missing', { cause: 'Invalid data' });
