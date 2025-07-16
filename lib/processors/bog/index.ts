@@ -50,16 +50,11 @@ export class BOGStatementProcessor
       /Counter-amount: ([A-Z]{3}[0-9]+\.?[0-9]*)/,
     );
 
-    console.log('conversionDetails', conversionDetails);
-    console.log('counterAmountMatch', counterAmountMatch);
-
     if (!counterAmountMatch) return null;
 
     const counterAmount = counterAmountMatch[1]; // e.g., "USD4.99"
     const counterCurrency = counterAmount.match(/^[A-Z]{3}/)?.[0]; // e.g., "USD"
     const counterValue = counterAmount.replace(/^[A-Z]{3}/, ''); // e.g., "4.99"
-
-    console.log('counterAmount', counterAmount);
 
     if (!counterCurrency || !counterValue) return null;
 
@@ -80,8 +75,6 @@ export class BOGStatementProcessor
         !this.isCurrencyConversion(rowDetails)
       );
     });
-
-    console.log('foundRow', foundRow);
 
     if (foundRow) {
       const rowDetails = foundRow[this.getColumnIndex('Details')];
