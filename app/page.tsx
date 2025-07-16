@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircleIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CONSTANTS } from '@/lib/processors/bog/constants';
+import { getAvailableCurrencies } from '@/lib/processors/getAvailableCurrencies';
 import { Bank } from '@/lib/processors/types';
 
 export default function UploadPage() {
@@ -21,8 +21,13 @@ export default function UploadPage() {
   const [filename, setFilename] = useState<string>('processed.csv');
   const [requestPending, setRequestPending] = useState(false);
   const [bank, setBank] = useState<Bank>(Bank.BOG);
-  const [currency, setCurrency] = useState<string>(CONSTANTS.defaultCurrency);
+  const { availableCurrencies, defaultCurrency } = getAvailableCurrencies(bank);
+  const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrency(defaultCurrency);
+  }, [defaultCurrency]);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,27 +80,7 @@ export default function UploadPage() {
           </div>
 
           <div className="flex w-full gap-3">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="currency">Currency</Label>
-              <Select
-                name="currency"
-                value={currency}
-                onValueChange={setCurrency}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONSTANTS.availableCurrencies.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-1 flex-col gap-3">
               <Label htmlFor="currency">Bank</Label>
               <Select
                 name="bank"
@@ -109,6 +94,26 @@ export default function UploadPage() {
                   {Object.values(Bank).map((bank) => (
                     <SelectItem key={bank} value={bank}>
                       {bank}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-3">
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                name="currency"
+                value={currency}
+                onValueChange={setCurrency}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCurrencies.map((currency) => (
+                    <SelectItem key={currency} value={currency}>
+                      {currency}
                     </SelectItem>
                   ))}
                 </SelectContent>
