@@ -138,7 +138,7 @@ export default function UploadPage() {
                 }
               />
               <Label htmlFor="shouldConvert">
-                Auto-convert transactions in other currencies
+                Auto-match transactions in other currencies
               </Label>
             </div>
           )}
