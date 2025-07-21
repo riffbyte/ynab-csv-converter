@@ -233,21 +233,21 @@ describe('BOGStatementProcessor', () => {
   });
 
   describe('getProcessedCSVData', () => {
-    it('should process regular transactions correctly', () => {
-      const result = processor.getProcessedCSVData('GEL');
+    it('should process regular transactions correctly', async () => {
+      const result = await processor.getProcessedCSVData('GEL');
       expect(result).toContain('Date,Payee,Memo,Amount');
       expect(result).toContain('Test Store');
       expect(result).toContain('Netflix');
       expect(result).toContain('Bank of Georgia');
     });
 
-    it('should handle currency conversion when shouldConvert is true', () => {
+    it('should handle currency conversion when shouldConvert is true', async () => {
       // Mock the findMatchingTransaction method
       jest.spyOn(processor as any, 'findMatchingTransaction').mockReturnValue({
         details: 'Matching Transaction Details',
       });
 
-      const result = processor.getProcessedCSVData('GEL', true);
+      const result = await processor.getProcessedCSVData('GEL', true);
       expect(result).toContain('Date,Payee,Memo,Amount');
     });
 
@@ -263,15 +263,15 @@ describe('BOGStatementProcessor', () => {
       );
     });
 
-    it('should skip rows with empty amounts', () => {
-      const result = processor.getProcessedCSVData('GEL');
+    it('should skip rows with empty amounts', async () => {
+      const result = await processor.getProcessedCSVData('GEL');
       const lines = result.split('\n');
       // Should only have header + rows with amounts
       expect(lines.length).toBeGreaterThan(1);
     });
 
-    it('should work with different currencies', () => {
-      const result = processor.getProcessedCSVData('USD');
+    it('should work with different currencies', async () => {
+      const result = await processor.getProcessedCSVData('USD');
       expect(result).toContain('Date,Payee,Memo,Amount');
     });
   });

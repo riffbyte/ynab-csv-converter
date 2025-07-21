@@ -112,7 +112,8 @@ export class BOGStatementProcessor
   public getProcessedCSVData(
     currency: (typeof CONSTANTS.availableCurrencies)[number],
     shouldConvert: boolean = false,
-  ): string {
+    shouldTranslate: boolean = false,
+  ): Promise<string> {
     const dateIdx = this.getColumnIndex('Date');
     const detailsIdx = this.getColumnIndex('Details');
     const amountIdx = this.getColumnIndex(currency);
@@ -150,6 +151,6 @@ export class BOGStatementProcessor
       return [date, this.extractPayee(details), details, amount];
     });
 
-    return this.getCSVData();
+    return this.getCSVData(shouldTranslate);
   }
 }

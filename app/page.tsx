@@ -28,6 +28,7 @@ export default function UploadPage() {
   const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
   const [shouldConvert, setShouldConvert] = useState(false);
+  const [shouldTranslate, setShouldTranslate] = useState(false);
 
   useEffect(() => {
     setCurrency(defaultCurrency);
@@ -142,6 +143,22 @@ export default function UploadPage() {
               </Label>
             </div>
           )}
+
+          <div className="flex w-full items-center gap-3">
+            <Checkbox
+              id="shouldTranslate"
+              name="shouldTranslate"
+              checked={shouldTranslate}
+              onCheckedChange={(checked) =>
+                setShouldTranslate(
+                  checked === 'indeterminate' ? false : checked,
+                )
+              }
+            />
+            <Label htmlFor="shouldTranslate">
+              Auto-translate payee information (experimental)
+            </Label>
+          </div>
 
           {error && (
             <Alert variant="destructive">

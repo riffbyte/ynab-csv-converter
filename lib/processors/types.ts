@@ -4,7 +4,8 @@ export interface StatementProcessor extends BaseStatementProcessor {
   getProcessedCSVData<Currencies extends readonly string[]>(
     currency: Currencies[number],
     shouldConvert?: boolean,
-  ): string;
+    shouldTranslate?: boolean,
+  ): Promise<string>;
 }
 
 export type StatementConstants<Currencies extends readonly string[]> = {

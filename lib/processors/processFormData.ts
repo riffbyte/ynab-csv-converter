@@ -10,6 +10,7 @@ export async function processFormData(formData: FormData) {
   const currency = formData.get('currency') as string | null;
   const bank = formData.get('bank') as string | null;
   const shouldConvert = formData.get('shouldConvert') as string | null;
+  const shouldTranslate = formData.get('shouldTranslate') as string | null;
 
   if (!file) {
     throw new Error('No file uploaded', {
@@ -65,9 +66,10 @@ export async function processFormData(formData: FormData) {
       });
   }
 
-  const csvData = processor.getProcessedCSVData(
+  const csvData = await processor.getProcessedCSVData(
     validatedCurrency,
     Boolean(shouldConvert),
+    Boolean(shouldTranslate),
   );
 
   return {

@@ -80,7 +80,9 @@ export class CredoStatementProcessor
 
   public getProcessedCSVData(
     _currency: (typeof CONSTANTS.availableCurrencies)[number],
-  ): string {
+    _shouldConvert: boolean = false,
+    shouldTranslate: boolean = false,
+  ): Promise<string> {
     const dateIdx = this.getColumnIndex('თარიღი');
     const detailsIdx = this.getColumnIndex('დანიშნულება');
     const outcomeAmountIdx = this.getColumnIndex('ბრუნვა (დებ)');
@@ -113,6 +115,6 @@ export class CredoStatementProcessor
       return [date, this.extractPayee(details, beneficiary), details, amount];
     });
 
-    return this.getCSVData();
+    return this.getCSVData(shouldTranslate);
   }
 }
