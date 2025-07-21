@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getAvailableCurrencies } from '@/lib/processors/getAvailableCurrencies';
+import { getCanConvert } from '@/lib/processors/getCanConvert';
 import { Bank } from '@/lib/processors/types';
 
 export default function UploadPage() {
@@ -23,6 +24,7 @@ export default function UploadPage() {
   const [requestPending, setRequestPending] = useState(false);
   const [bank, setBank] = useState<Bank>(Bank.BOG);
   const { availableCurrencies, defaultCurrency } = getAvailableCurrencies(bank);
+  const canConvert = getCanConvert(bank);
   const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
   const [shouldConvert, setShouldConvert] = useState(false);
@@ -123,19 +125,23 @@ export default function UploadPage() {
             </div>
           </div>
 
-          <div className="flex w-full items-center gap-3">
-            <Checkbox
-              id="shouldConvert"
-              name="shouldConvert"
-              checked={shouldConvert}
-              onCheckedChange={(checked) =>
-                setShouldConvert(checked === 'indeterminate' ? false : checked)
-              }
-            />
-            <Label htmlFor="shouldConvert">
-              Auto-convert transactions in other currencies
-            </Label>
-          </div>
+          {canConvert && (
+            <div className="flex w-full items-center gap-3">
+              <Checkbox
+                id="shouldConvert"
+                name="shouldConvert"
+                checked={shouldConvert}
+                onCheckedChange={(checked) =>
+                  setShouldConvert(
+                    checked === 'indeterminate' ? false : checked,
+                  )
+                }
+              />
+              <Label htmlFor="shouldConvert">
+                Auto-convert transactions in other currencies
+              </Label>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">
