@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { BOGStatementProcessor } from './bog';
 import { CONSTANTS as BOG_CONSTANTS } from './bog/constants';
+import { CredoStatementProcessor } from './credo';
+import { CONSTANTS as CREDO_CONSTANTS } from './credo/constants';
 import { Bank, type StatementProcessor } from './types';
 
 export async function processFormData(formData: FormData) {
@@ -44,6 +46,18 @@ export async function processFormData(formData: FormData) {
         });
       }
 
+      break;
+    case Bank.CREDO:
+      processor = new CredoStatementProcessor(buffer);
+      if (!currency) {
+        validatedCurrency = CREDO_CONSTANTS.defaultCurrency;
+      } else if (CREDO_CONSTANTS.isValidCurrency(currency)) {
+        validatedCurrency = currency;
+      } else {
+        throw new Error('Invalid currency', {
+          cause: 'Invalid data',
+        });
+      }
       break;
     default:
       throw new Error(`Bank "${bank}" is not supported yet.`, {
