@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircleIcon } from 'lucide-react';
+import { AlertCircleIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -168,6 +168,7 @@ export default function UploadPage() {
           )}
 
           <Button className="w-full" type="submit" disabled={requestPending}>
+            {requestPending && <Loader2Icon className="animate-spin" />}
             {requestPending ? 'Please wait...' : 'Upload & Convert'}
           </Button>
         </form>
