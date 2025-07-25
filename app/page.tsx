@@ -71,7 +71,7 @@ export default function UploadPage() {
   };
 
   return (
-    <main className="flex flex-col w-full h-screen items-center justify-center gap-6 p-16">
+    <main className="flex-1 flex flex-col w-full h-full items-center justify-center gap-6 p-16">
       <h1 className="text-2xl font-semibold">XLSX to CSV conveter for YNAB</h1>
 
       {!csvUrl ? (
