@@ -6,8 +6,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Supported banks
 
-- Bank of Georgia (GEL currency)
+- Bank of Georgia (GEL, USD, EUR, GBP currencies)
+- Credo Bank (GEL currency)
 
+## Features
+
+- Automatic extraction of payee information from transaction details
+- Automatic matching of transaction made with other currencies to the selected currency (currenly only supported for BoG)
+- Automatic translation of payee information from Georgian to English (experimental)
 
 ## Getting Started
 
