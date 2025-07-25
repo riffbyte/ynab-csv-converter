@@ -3,6 +3,7 @@
 import { AlertCircleIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -156,7 +157,8 @@ export default function UploadPage() {
               }
             />
             <Label htmlFor="shouldTranslate">
-              Auto-translate payee information (experimental)
+              <span>Auto-translate payee information</span>
+              <Badge variant="outline">Experimental</Badge>
             </Label>
           </div>
 
