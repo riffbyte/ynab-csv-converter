@@ -29,6 +29,15 @@ export class BaseStatementProcessor {
     });
   }
 
+  public getPreview(rowsToShow: number = 5) {
+    const headerRow = this.result[0];
+    const sortedRows = this.result
+      .slice(1)
+      .toSorted((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+
+    return [headerRow, ...sortedRows.slice(0, rowsToShow)];
+  }
+
   protected getColumnIndex(columnName: string) {
     const headers = this.rawData[0];
     return headers.indexOf(columnName);

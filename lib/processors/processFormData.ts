@@ -72,8 +72,11 @@ export async function processFormData(formData: FormData) {
     Boolean(shouldTranslate),
   );
 
+  const preview = processor.getPreview();
+
   return {
     csvData,
+    preview,
     outputFileName,
   } as const;
 }

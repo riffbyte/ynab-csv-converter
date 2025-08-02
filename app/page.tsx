@@ -2,6 +2,7 @@
 
 import { AlertCircleIcon, Loader2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { PreviewTable } from '@/components/preview-table';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [shouldConvert, setShouldConvert] = useState(false);
   const [shouldTranslate, setShouldTranslate] = useState(false);
+  const [preview, setPreview] = useState<string[][] | null>(null);
 
   useEffect(() => {
     setCurrency(defaultCurrency);
@@ -48,15 +50,18 @@ export default function UploadPage() {
     });
 
     if (res.ok) {
-      const disposition = res.headers.get('Content-Disposition');
-      const match = disposition?.match(/filename="(.+)"/);
-      const name = match?.[1] ?? 'processed.csv';
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const { csvData, preview, outputFileName } = (await res.json()) as {
+        csvData: string;
+        preview: string[][];
+        outputFileName: string;
+      };
+      const url = URL.createObjectURL(
+        new Blob([csvData], { type: 'text/csv' }),
+      );
 
       setCsvUrl(url);
-      setFilename(name);
+      setFilename(outputFileName);
+      setPreview(preview);
     } else {
       const error = await res.json();
       setError(error.error);
@@ -68,6 +73,7 @@ export default function UploadPage() {
   const handleReset = () => {
     setCsvUrl(null);
     setFilename('processed.csv');
+    setPreview(null);
     setRequestPending(false);
   };
 
@@ -177,22 +183,28 @@ export default function UploadPage() {
       ) : null}
 
       {csvUrl && (
-        <div className="flex flex-col w-full max-w-sm items-center gap-4">
-          <h1 className="text-xl font-semibold">Your file is ready!</h1>
+        <div className="flex flex-col w-full items-center gap-4">
+          <h1 className="text-xl font-semibold max-w-sm">
+            Your file is ready!
+          </h1>
 
-          <Button className="w-full max-w-sm" asChild>
-            <a href={csvUrl} download={filename}>
-              Download "{filename}"
-            </a>
-          </Button>
-          <Button
-            className="w-full"
-            type="reset"
-            variant="outline"
-            onClick={handleReset}
-          >
-            Start over
-          </Button>
+          {preview && <PreviewTable preview={preview} />}
+
+          <div className="flex flex-col w-full max-w-sm items-center gap-4">
+            <Button className="w-full max-w-sm" asChild>
+              <a href={csvUrl} download={filename}>
+                Download "{filename}"
+              </a>
+            </Button>
+            <Button
+              className="w-full"
+              type="reset"
+              variant="outline"
+              onClick={handleReset}
+            >
+              Start over
+            </Button>
+          </div>
         </div>
       )}
     </main>

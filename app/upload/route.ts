@@ -5,15 +5,18 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
 
   try {
-    const { csvData, outputFileName } = await processFormData(formData);
+    const { csvData, preview, outputFileName } =
+      await processFormData(formData);
 
-    return new NextResponse(csvData, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${outputFileName}"`,
+    return new NextResponse(
+      JSON.stringify({ csvData, preview, outputFileName }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    });
+    );
   } catch (err) {
     console.error(err);
 
