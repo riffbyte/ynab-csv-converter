@@ -31,9 +31,7 @@ export class BaseStatementProcessor {
 
   public getPreview(rowsToShow: number = 5) {
     const headerRow = this.result[0];
-    const sortedRows = this.result
-      .slice(1)
-      .toSorted((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+    const sortedRows = this.result.slice(1);
 
     return [headerRow, ...sortedRows.slice(0, rowsToShow)];
   }
