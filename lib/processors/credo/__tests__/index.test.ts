@@ -46,15 +46,15 @@ describe('CredoStatementProcessor', () => {
     (XLSX.utils.sheet_to_csv as jest.Mock).mockReturnValue(
       'Date,Payee,Memo,Amount\n01/01/2024,Supermarket,გადახდა - Supermarket 12.34 GEL 01.01.2024,-12.34\n02/01/2024,Withdrawal - ATM,განაღდება - ATM,-100\n03/01/2024,Transfer comission,ლარის გადარიცხვის საკომისიო,-1.5\n04/01/2024,Miscellaneous comission,სხვა და სხვა საკომისიო,-0.5\n05/01/2024,Cashless conversion,უნაღდო კონვერტაცია,-50\n06/01/2024,John Doe,Personal Transfer. - ABC123,200\n07/01/2024,Zolotaya Korona,ზალატაია კარონა,-20\n08/01/2024,,Unmatched details,-5',
     );
-    const mockFileBuffer = Buffer.from(
-      'mock file content',
-    ) as unknown as Buffer<ArrayBuffer>;
-    processor = new CredoStatementProcessor(mockFileBuffer);
+    const mockFile = new File(['mock file content'], 'test.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    processor = new CredoStatementProcessor(mockFile);
     (processor as any).rawData = mockData;
   });
 
   describe('constructor', () => {
-    it('should create instance with valid file buffer', () => {
+    it('should create instance with valid file', () => {
       expect(processor).toBeInstanceOf(CredoStatementProcessor);
     });
   });
@@ -116,12 +116,18 @@ describe('CredoStatementProcessor', () => {
       expect(result).toContain('John Doe');
       expect(result).toContain('Zolotaya Korona');
     });
-    it('should throw error when required columns are missing', () => {
-      (processor as any).rawData = [
-        ['Invalid', 'Columns'],
-        ['01/01/2024', 'Test'],
-      ];
-      expect(() => processor.getProcessedCSVData('GEL')).toThrow(
+    it('should throw error when required columns are missing', async () => {
+      // Mock initializeWithXLSX to set invalid data
+      jest
+        .spyOn(processor as any, 'initializeWithXLSX')
+        .mockImplementation(() => {
+          (processor as any).rawData = [
+            ['Invalid', 'Columns'],
+            ['01/01/2024', 'Test'],
+          ];
+        });
+
+      await expect(processor.getProcessedCSVData('GEL')).rejects.toThrow(
         'Required columns missing',
       );
     });

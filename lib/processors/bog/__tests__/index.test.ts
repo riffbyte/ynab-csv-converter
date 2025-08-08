@@ -68,18 +68,18 @@ describe('BOGStatementProcessor', () => {
       'Date,Payee,Memo,Amount\n01/01/2024,Test Store,Merchant: Test Store,-100.00\n03/01/2024,Netflix,payment service, Netflix,-25.00\n05/01/2024,Jane Smith,Incoming Transfer - Amount; Sender: Jane Smith; Account: 654321,200.00\n06/01/2024,Bank of Georgia,Fee - Amount,-5.00',
     );
 
-    // Create processor with mock buffer
-    const mockFileBuffer = Buffer.from(
-      'mock file content',
-    ) as unknown as Buffer<ArrayBuffer>;
-    processor = new BOGStatementProcessor(mockFileBuffer);
+    // Create processor with mock File
+    const mockFile = new File(['mock file content'], 'test.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    processor = new BOGStatementProcessor(mockFile);
 
     // Directly set the parsed data
     (processor as any).rawData = mockData;
   });
 
   describe('constructor', () => {
-    it('should create instance with valid file buffer', () => {
+    it('should create instance with valid file', () => {
       expect(processor).toBeInstanceOf(BOGStatementProcessor);
     });
   });
@@ -254,14 +254,18 @@ describe('BOGStatementProcessor', () => {
       expect(result).toContain('Date,Payee,Memo,Amount');
     });
 
-    it('should throw error when required columns are missing', () => {
-      // Set invalid data without required columns
-      (processor as any).rawData = [
-        ['Invalid', 'Columns'],
-        ['01/01/2024', 'Test'],
-      ];
+    it('should throw error when required columns are missing', async () => {
+      // Mock initializeWithXLSX to set invalid data
+      jest
+        .spyOn(processor as any, 'initializeWithXLSX')
+        .mockImplementation(() => {
+          (processor as any).rawData = [
+            ['Invalid', 'Columns'],
+            ['01/01/2024', 'Test'],
+          ];
+        });
 
-      expect(() => processor.getProcessedCSVData('GEL')).toThrow(
+      await expect(processor.getProcessedCSVData('GEL')).rejects.toThrow(
         'Required columns missing',
       );
     });
