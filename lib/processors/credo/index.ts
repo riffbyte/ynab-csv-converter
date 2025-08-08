@@ -57,8 +57,8 @@ export class CredoStatementProcessor
   extends BaseXLSXProcessor
   implements BankStatementProcessor
 {
-  constructor(fileBuffer: Buffer<ArrayBuffer>) {
-    super(fileBuffer, CONFIG.transactionsSheetName ?? 'ტრანზაქციები');
+  constructor(file: File) {
+    super(file, CONFIG.transactionsSheetName);
   }
 
   private extractPayee(details: string, beneficiary: string): string {
@@ -80,11 +80,13 @@ export class CredoStatementProcessor
     return '';
   }
 
-  public getProcessedCSVData(
+  public async getProcessedCSVData(
     _currency: string | null,
     _shouldConvert: boolean = false,
     shouldTranslate: boolean = false,
   ): Promise<string> {
+    await this.initializeWithXLSX();
+
     const dateIdx = this.getColumnIndex('თარიღი');
     const detailsIdx = this.getColumnIndex('დანიშნულება');
     const outcomeAmountIdx = this.getColumnIndex('ბრუნვა (დებ)');

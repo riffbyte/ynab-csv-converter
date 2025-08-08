@@ -6,17 +6,35 @@ const TRANSLATE_API_CHUNK_SIZE = 128;
 const OUTPUT_LANGUAGE = 'en';
 
 export class BaseFileProcessor {
-  protected rawData: RawDataRow[];
-  protected result: ResultDataRow[];
+  protected rawData: RawDataRow[] = [];
+  protected result: ResultDataRow[] = [['Date', 'Payee', 'Memo', 'Amount']];
   protected translate: InstanceType<typeof v2.Translate>;
   protected translatedLanguages: string[] = [];
+  protected file: File;
+  protected fileBuffer: Buffer<ArrayBuffer> = Buffer.from([]);
 
-  constructor(_fileBuffer: Buffer<ArrayBuffer>) {
-    this.rawData = [];
-    this.result = [['Date', 'Payee', 'Memo', 'Amount']];
+  constructor(file: File) {
+    this.file = file;
     this.translate = new v2.Translate({
       key: process.env.GOOGLE_TRANSLATE_API_KEY,
     });
+  }
+
+  /**
+   * Any extending class should call this method before processing data.
+   */
+  protected async initializeWithFile() {
+    try {
+      const arrayBuffer = await this.file.arrayBuffer();
+      this.fileBuffer = Buffer.from(arrayBuffer);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unexpected error';
+
+      throw new Error(`Failed to read file: ${message}`, {
+        cause: 'Invalid data',
+      });
+    }
   }
 
   protected getColumnIndex(columnName: string) {

@@ -43,8 +43,8 @@ export class BOGStatementProcessor
   extends BaseXLSXProcessor
   implements BankStatementProcessor
 {
-  constructor(fileBuffer: Buffer<ArrayBuffer>) {
-    super(fileBuffer, CONFIG.transactionsSheetName ?? 'Transactions');
+  constructor(file: File) {
+    super(file, CONFIG.transactionsSheetName);
   }
 
   private extractPayee(details: string): string {
@@ -111,11 +111,13 @@ export class BOGStatementProcessor
     return matchingRow ? { details: matchingRow[detailsIdx] } : null;
   }
 
-  public getProcessedCSVData(
+  public async getProcessedCSVData(
     currency: string | null,
     shouldConvert: boolean = false,
     shouldTranslate: boolean = false,
   ): Promise<string> {
+    await this.initializeWithXLSX();
+
     const dateIdx = this.getColumnIndex('Date');
     const detailsIdx = this.getColumnIndex('Details');
     const amountIdx = this.getColumnIndex(validateCurrency(currency, CONFIG));

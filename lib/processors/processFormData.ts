@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { BOGStatementProcessor } from './bog';
 import { CredoStatementProcessor } from './credo';
+import { TBCStatementProcessor } from './tbc';
 import { Bank, type BankStatementProcessor } from './types';
 
 export async function processFormData(formData: FormData) {
@@ -22,21 +23,20 @@ export async function processFormData(formData: FormData) {
     });
   }
 
-  const fileName = file.name;
-  const baseName = path.parse(fileName).name; // Remove extension
+  const baseName = path.parse(file.name).name;
   const outputFileName = `${baseName}.csv`;
-
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
 
   let processor: BankStatementProcessor;
 
   switch (bank) {
     case Bank.BOG:
-      processor = new BOGStatementProcessor(buffer);
+      processor = new BOGStatementProcessor(file);
       break;
     case Bank.CREDO:
-      processor = new CredoStatementProcessor(buffer);
+      processor = new CredoStatementProcessor(file);
+      break;
+    case Bank.TBC:
+      processor = new TBCStatementProcessor(file);
       break;
     default:
       throw new Error(`Bank "${bank}" is not supported yet.`, {
