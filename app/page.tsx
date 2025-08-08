@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getAvailableCurrencies } from '@/lib/processors/getAvailableCurrencies';
+import { getBankConfig } from '@/lib/processors/bankConfigs';
 import { getCanConvert } from '@/lib/processors/getCanConvert';
 import { Bank } from '@/lib/processors/types';
 
@@ -25,7 +25,7 @@ export default function UploadPage() {
   const [filename, setFilename] = useState<string>('processed.csv');
   const [requestPending, setRequestPending] = useState(false);
   const [bank, setBank] = useState<Bank>(Bank.BOG);
-  const { availableCurrencies, defaultCurrency } = getAvailableCurrencies(bank);
+  const { availableCurrencies, defaultCurrency } = getBankConfig(bank);
   const canConvert = getCanConvert(bank);
   const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
