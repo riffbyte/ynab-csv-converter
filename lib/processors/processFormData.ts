@@ -1,9 +1,7 @@
 import path from 'node:path';
 import { BOGStatementProcessor } from './bog';
-import { CONSTANTS as BOG_CONSTANTS } from './bog/constants';
 import { CredoStatementProcessor } from './credo';
-import { CONSTANTS as CREDO_CONSTANTS } from './credo/constants';
-import { Bank, type StatementProcessor } from './types';
+import { Bank, type BankStatementProcessor } from './types';
 
 export async function processFormData(formData: FormData) {
   const file = formData.get('file') as File | null;
@@ -25,40 +23,20 @@ export async function processFormData(formData: FormData) {
   }
 
   const fileName = file.name;
-  const baseName = path.parse(fileName).name; // Remove .xlsx
+  const baseName = path.parse(fileName).name; // Remove extension
   const outputFileName = `${baseName}.csv`;
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  let processor: StatementProcessor;
-  let validatedCurrency: string;
+  let processor: BankStatementProcessor;
 
   switch (bank) {
     case Bank.BOG:
       processor = new BOGStatementProcessor(buffer);
-      if (!currency) {
-        validatedCurrency = BOG_CONSTANTS.defaultCurrency;
-      } else if (BOG_CONSTANTS.isValidCurrency(currency)) {
-        validatedCurrency = currency;
-      } else {
-        throw new Error('Invalid currency', {
-          cause: 'Invalid data',
-        });
-      }
-
       break;
     case Bank.CREDO:
       processor = new CredoStatementProcessor(buffer);
-      if (!currency) {
-        validatedCurrency = CREDO_CONSTANTS.defaultCurrency;
-      } else if (CREDO_CONSTANTS.isValidCurrency(currency)) {
-        validatedCurrency = currency;
-      } else {
-        throw new Error('Invalid currency', {
-          cause: 'Invalid data',
-        });
-      }
       break;
     default:
       throw new Error(`Bank "${bank}" is not supported yet.`, {
@@ -67,7 +45,7 @@ export async function processFormData(formData: FormData) {
   }
 
   const csvData = await processor.getProcessedCSVData(
-    validatedCurrency,
+    currency,
     Boolean(shouldConvert),
     Boolean(shouldTranslate),
   );

@@ -1,39 +1,22 @@
 import { v2 } from '@google-cloud/translate';
 import * as XLSX from 'xlsx';
+import type { RawDataRow, ResultDataRow } from '../types';
 
-const { Translate } = v2;
 const TRANSLATE_API_CHUNK_SIZE = 128;
-const TRANSLATED_LANGUAGES = ['ka'];
+const OUTPUT_LANGUAGE = 'en';
 
-type RawDataRow = string[];
-type ResultDataRow = [string, string, string, string];
+export class BaseFileProcessor {
+  protected rawData: RawDataRow[];
+  protected result: ResultDataRow[];
+  protected translate: InstanceType<typeof v2.Translate>;
+  protected translatedLanguages: string[] = [];
 
-export class BaseStatementProcessor {
-  private rawData: RawDataRow[];
-  private result: ResultDataRow[] = [['Date', 'Payee', 'Memo', 'Amount']];
-  private translate: InstanceType<typeof Translate>;
-
-  constructor(fileBuffer: Buffer<ArrayBuffer>, sheetName: string) {
-    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-    const sheet = workbook.Sheets[sheetName];
-
-    if (!sheet) {
-      throw new Error(`Sheet "${sheetName}" not found`, {
-        cause: 'Invalid data',
-      });
-    }
-
-    this.rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    this.translate = new Translate({
+  constructor(_fileBuffer: Buffer<ArrayBuffer>) {
+    this.rawData = [];
+    this.result = [['Date', 'Payee', 'Memo', 'Amount']];
+    this.translate = new v2.Translate({
       key: process.env.GOOGLE_TRANSLATE_API_KEY,
     });
-  }
-
-  public getPreview(rowsToShow: number = 5) {
-    const headerRow = this.result[0];
-    const sortedRows = this.result.slice(1);
-
-    return [headerRow, ...sortedRows.slice(0, rowsToShow)];
   }
 
   protected getColumnIndex(columnName: string) {
@@ -61,12 +44,39 @@ export class BaseStatementProcessor {
     for (let i = 0; i < strings.length; i += TRANSLATE_API_CHUNK_SIZE) {
       const chunk = strings.slice(i, i + TRANSLATE_API_CHUNK_SIZE);
       const [chunkTranslations] = await this.translate.translate(chunk, {
-        to: 'en',
+        to: OUTPUT_LANGUAGE,
       });
       translations.push(...chunkTranslations);
     }
 
     return translations;
+  }
+
+  private async translateRowsIfNeeded() {
+    const allPayees = this.result.map(([_date, payee]) => payee);
+
+    const payeesDetectedLanguages =
+      await this.mapToDetectedLanguages(allPayees);
+
+    if (
+      !Object.values(payeesDetectedLanguages).some(
+        (language) => language !== OUTPUT_LANGUAGE,
+      )
+    ) {
+      return;
+    }
+
+    const payeeTranslations = await this.translateStrings(allPayees);
+
+    this.result.forEach((row, index) => {
+      if (
+        this.translatedLanguages.includes(
+          payeesDetectedLanguages[allPayees[index]],
+        )
+      ) {
+        row[1] = payeeTranslations[index];
+      }
+    });
   }
 
   protected processRows(
@@ -84,31 +94,6 @@ export class BaseStatementProcessor {
     }
   }
 
-  private async translateRowsIfNeeded() {
-    const allPayees = this.result.map(([_date, payee]) => payee);
-
-    const payeesDetectedLanguages =
-      await this.mapToDetectedLanguages(allPayees);
-
-    if (
-      !Object.values(payeesDetectedLanguages).some(
-        (language) => language !== 'en',
-      )
-    ) {
-      return;
-    }
-
-    const payeeTranslations = await this.translateStrings(allPayees);
-
-    this.result.forEach((row, index) => {
-      if (
-        TRANSLATED_LANGUAGES.includes(payeesDetectedLanguages[allPayees[index]])
-      ) {
-        row[1] = payeeTranslations[index];
-      }
-    });
-  }
-
   protected async getCSVData(shouldTranslate: boolean = false) {
     if (shouldTranslate) {
       await this.translateRowsIfNeeded();
@@ -116,5 +101,12 @@ export class BaseStatementProcessor {
 
     const csvSheet = XLSX.utils.aoa_to_sheet(this.result);
     return XLSX.utils.sheet_to_csv(csvSheet);
+  }
+
+  public getPreview(rowsToShow: number = 5) {
+    const headerRow = this.result[0];
+    const sortedRows = this.result.slice(1);
+
+    return [headerRow, ...sortedRows.slice(0, rowsToShow)];
   }
 }

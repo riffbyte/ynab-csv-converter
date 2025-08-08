@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getBankConfig } from '@/lib/processors/bankConfigs';
-import { getCanConvert } from '@/lib/processors/getCanConvert';
 import { Bank } from '@/lib/processors/types';
 
 export default function UploadPage() {
@@ -25,8 +24,12 @@ export default function UploadPage() {
   const [filename, setFilename] = useState<string>('processed.csv');
   const [requestPending, setRequestPending] = useState(false);
   const [bank, setBank] = useState<Bank>(Bank.BOG);
-  const { availableCurrencies, defaultCurrency } = getBankConfig(bank);
-  const canConvert = getCanConvert(bank);
+  const {
+    availableCurrencies,
+    defaultCurrency,
+    canConvertMatchingTransactions,
+    canTranslate,
+  } = getBankConfig(bank);
   const [currency, setCurrency] = useState<string>(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
   const [shouldConvert, setShouldConvert] = useState(false);
@@ -133,7 +136,7 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {canConvert && (
+          {canConvertMatchingTransactions && (
             <div className="flex w-full items-center gap-3">
               <Checkbox
                 id="shouldConvert"
@@ -151,22 +154,24 @@ export default function UploadPage() {
             </div>
           )}
 
-          <div className="flex w-full items-center gap-3">
-            <Checkbox
-              id="shouldTranslate"
-              name="shouldTranslate"
-              checked={shouldTranslate}
-              onCheckedChange={(checked) =>
-                setShouldTranslate(
-                  checked === 'indeterminate' ? false : checked,
-                )
-              }
-            />
-            <Label htmlFor="shouldTranslate">
-              <span>Auto-translate payee information</span>
-              <Badge variant="outline">Experimental</Badge>
-            </Label>
-          </div>
+          {canTranslate && (
+            <div className="flex w-full items-center gap-3">
+              <Checkbox
+                id="shouldTranslate"
+                name="shouldTranslate"
+                checked={shouldTranslate}
+                onCheckedChange={(checked) =>
+                  setShouldTranslate(
+                    checked === 'indeterminate' ? false : checked,
+                  )
+                }
+              />
+              <Label htmlFor="shouldTranslate">
+                <span>Auto-translate payee information</span>
+                <Badge variant="outline">Experimental</Badge>
+              </Label>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">

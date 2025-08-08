@@ -1,10 +1,13 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: This is needed for manually setting private properties */
 import * as XLSX from 'xlsx';
-import { CONSTANTS } from '../constants';
+import { getBankConfig } from '../../bankConfigs';
+import { Bank } from '../../types';
 import { CredoStatementProcessor } from '../index';
 
 // Mock XLSX module
 jest.mock('xlsx');
+
+const CONFIG = getBankConfig(Bank.CREDO);
 
 describe('CredoStatementProcessor', () => {
   let mockData: string[][];
@@ -36,7 +39,7 @@ describe('CredoStatementProcessor', () => {
       ['08/01/2024', 'Unmatched details', '5', '', ''],
     ];
     (XLSX.read as jest.Mock).mockReturnValue({
-      Sheets: { [CONSTANTS.transactionsSheetName]: {} },
+      Sheets: { [CONFIG.transactionsSheetName]: {} },
     });
     (XLSX.utils.sheet_to_json as jest.Mock).mockReturnValue(mockData);
     (XLSX.utils.aoa_to_sheet as jest.Mock).mockReturnValue({});

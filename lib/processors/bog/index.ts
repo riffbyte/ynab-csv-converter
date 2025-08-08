@@ -1,6 +1,7 @@
-import { BaseStatementProcessor } from '../base';
-import type { StatementProcessor } from '../types';
-import { CONSTANTS } from './constants';
+import { getBankConfig } from '../bankConfigs';
+import { BaseXLSXProcessor } from '../base/xlsx-processor';
+import { Bank, type BankStatementProcessor } from '../types';
+import { validateCurrency } from '../validateCurrency';
 
 const PAYEE_PATTERNS: {
   pattern: RegExp;
@@ -36,13 +37,14 @@ const SPECIAL_PAYEES = {
 } as const;
 
 const COUNTER_AMOUNT_PATTERN = /Counter-amount: ([A-Z]{3}[0-9]+\.?[0-9]*)/;
+const CONFIG = getBankConfig(Bank.BOG);
 
 export class BOGStatementProcessor
-  extends BaseStatementProcessor
-  implements StatementProcessor
+  extends BaseXLSXProcessor
+  implements BankStatementProcessor
 {
   constructor(fileBuffer: Buffer<ArrayBuffer>) {
-    super(fileBuffer, CONSTANTS.transactionsSheetName);
+    super(fileBuffer, CONFIG.transactionsSheetName ?? 'Transactions');
   }
 
   private extractPayee(details: string): string {
@@ -110,13 +112,13 @@ export class BOGStatementProcessor
   }
 
   public getProcessedCSVData(
-    currency: (typeof CONSTANTS.availableCurrencies)[number],
+    currency: string | null,
     shouldConvert: boolean = false,
     shouldTranslate: boolean = false,
   ): Promise<string> {
     const dateIdx = this.getColumnIndex('Date');
     const detailsIdx = this.getColumnIndex('Details');
-    const amountIdx = this.getColumnIndex(currency);
+    const amountIdx = this.getColumnIndex(validateCurrency(currency, CONFIG));
 
     if (dateIdx === -1 || detailsIdx === -1 || amountIdx === -1) {
       throw new Error('Required columns missing', { cause: 'Invalid data' });

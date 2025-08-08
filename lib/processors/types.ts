@@ -1,19 +1,24 @@
-import type { BaseStatementProcessor } from './base';
+export type RawDataRow = string[];
+export type ResultDataRow = [string, string, string, string];
 
-export interface StatementProcessor extends BaseStatementProcessor {
-  getProcessedCSVData<Currencies extends readonly string[]>(
-    currency: Currencies[number],
-    shouldConvert?: boolean,
-    shouldTranslate?: boolean,
-  ): Promise<string>;
-}
-
-export type StatementConstants<Currencies extends readonly string[]> = {
+export interface BankConfig<
+  Currencies extends readonly string[] = readonly string[],
+> {
   availableCurrencies: Currencies;
   defaultCurrency: Currencies[number];
   transactionsSheetName: string;
-  isValidCurrency(currency: string): currency is Currencies[number];
-};
+  canConvertMatchingTransactions: boolean;
+  canTranslate: boolean;
+}
+
+export abstract class BankStatementProcessor {
+  public abstract getProcessedCSVData(
+    currency?: string | null,
+    shouldConvert?: boolean,
+    shouldTranslate?: boolean,
+  ): Promise<string>;
+  public abstract getPreview(rowsToShow?: number): string[][];
+}
 
 export enum Bank {
   BOG = 'Bank of Georgia',

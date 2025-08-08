@@ -1,6 +1,6 @@
-import { BaseStatementProcessor } from '../base';
-import type { StatementProcessor } from '../types';
-import { CONSTANTS } from './constants';
+import { getBankConfig } from '../bankConfigs';
+import { BaseXLSXProcessor } from '../base/xlsx-processor';
+import { Bank, type BankStatementProcessor } from '../types';
 
 type PayeeMatcher =
   | {
@@ -51,12 +51,14 @@ const PAYEE_MATCHERS: PayeeMatcher[] = [
   },
 ];
 
+const CONFIG = getBankConfig(Bank.CREDO);
+
 export class CredoStatementProcessor
-  extends BaseStatementProcessor
-  implements StatementProcessor
+  extends BaseXLSXProcessor
+  implements BankStatementProcessor
 {
   constructor(fileBuffer: Buffer<ArrayBuffer>) {
-    super(fileBuffer, CONSTANTS.transactionsSheetName);
+    super(fileBuffer, CONFIG.transactionsSheetName ?? 'ტრანზაქციები');
   }
 
   private extractPayee(details: string, beneficiary: string): string {
@@ -79,7 +81,7 @@ export class CredoStatementProcessor
   }
 
   public getProcessedCSVData(
-    _currency: (typeof CONSTANTS.availableCurrencies)[number],
+    _currency: string | null,
     _shouldConvert: boolean = false,
     shouldTranslate: boolean = false,
   ): Promise<string> {
