@@ -82,7 +82,7 @@ export default function UploadPage() {
 
   return (
     <main className="flex-1 flex flex-col w-full h-full items-center justify-center gap-6 p-16">
-      <h1 className="text-2xl font-semibold">XLSX to CSV conveter for YNAB</h1>
+      <h1 className="text-2xl font-semibold">CSV conveter for YNAB</h1>
 
       {!csvUrl ? (
         <form
@@ -90,8 +90,14 @@ export default function UploadPage() {
           onSubmit={handleUpload}
         >
           <div className="flex flex-col w-full gap-3">
-            <Label htmlFor="file">Upload Excel File</Label>
-            <Input id="file" type="file" name="file" accept=".xlsx" required />
+            <Label htmlFor="file">Upload File</Label>
+            <Input
+              id="file"
+              type="file"
+              name="file"
+              accept=".xlsx,.pdf"
+              required
+            />
           </div>
 
           <div className="flex w-full gap-3">
