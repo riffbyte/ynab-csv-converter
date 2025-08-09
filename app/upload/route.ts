@@ -17,15 +17,18 @@ export async function POST(req: NextRequest) {
         },
       },
     );
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
 
-    if (err instanceof Error && err.cause === 'Invalid data') {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+    if (error instanceof Error && error.cause === 'Invalid data') {
+      return NextResponse.json(
+        { message: error.message, error },
+        { status: 400 },
+      );
     }
 
     return NextResponse.json(
-      { error: 'Failed to process Excel file' },
+      { message: 'Failed to process Excel file', error },
       { status: 500 },
     );
   }

@@ -66,8 +66,12 @@ export default function UploadPage() {
       setFilename(outputFileName);
       setPreview(preview);
     } else {
-      const error = await res.json();
-      setError(error.error);
+      const { message, error } = (await res.json()) as {
+        message: string;
+        error: unknown;
+      };
+      console.error(error);
+      setError(message);
     }
 
     setRequestPending(false);
