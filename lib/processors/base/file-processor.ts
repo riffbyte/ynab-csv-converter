@@ -1,5 +1,6 @@
 import { v2 } from '@google-cloud/translate';
 import * as XLSX from 'xlsx';
+import { getAuthClient } from '@/lib/gcp/getAuthClient';
 import type { RawDataRow, ResultDataRow } from '../types';
 
 const TRANSLATE_API_CHUNK_SIZE = 128;
@@ -16,7 +17,7 @@ export class BaseFileProcessor {
   constructor(file: File) {
     this.file = file;
     this.translate = new v2.Translate({
-      key: process.env.GOOGLE_TRANSLATE_API_KEY,
+      authClient: getAuthClient(),
     });
   }
 
