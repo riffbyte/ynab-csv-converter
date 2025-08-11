@@ -1,6 +1,6 @@
 # YNAB CSV Converter
 
-This app converts an XLSX bank statement into a CSV format accepted by [YNAB](https://www.ynab.com/).
+This app converts an XLSX or PDF bank statement into a CSV format accepted by [YNAB](https://www.ynab.com/).
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
@@ -8,6 +8,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 - Bank of Georgia (GEL, USD, EUR, GBP currencies)
 - Credo Bank (GEL currency)
+- TBC Bank (GEL currency) <- coming soon
 
 ## Features
 
